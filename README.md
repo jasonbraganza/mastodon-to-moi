@@ -17,5 +17,5 @@ python -m pip install -r requirements.txt
 ```bash
 python mastodon_to_moi.py <'mastodon rss feed url (without the angle brackets … or teh quotes)'>
 ```
-or alternatively
+or alternatively  
 2. Change `fallback_url` in `settings.py` to your feed url to run without specifying the url
