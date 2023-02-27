@@ -1,7 +1,7 @@
 # Aims
 # 1. Should be a python script that syncs my Mastodon feed to my microblog
 # TODO: 2. Learn to give them types and learn mypy
-# TODO: 3. It should be a standalone python utility, with no need for a system python
+# TODO: 3. It should be a standalone python utility, with no need for a system python, use click?
 
 
 # Sample micropost skeleton
@@ -22,7 +22,7 @@ import feedparser
 from bs4 import BeautifulSoup
 from markdownify import markdownify
 
-from settings import fallback_url, post_path, image_path
+from settings import mastodon_feed_url, post_path, image_path
 
 microblog_post_path = Path(post_path)
 microblog_image_path = Path(image_path)
@@ -157,4 +157,4 @@ if __name__ == "__main__":
         url = sys.argv[1]
         main(url)
     else:
-        main(fallback_url)
+        main(mastodon_feed_url)

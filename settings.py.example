@@ -1,0 +1,5 @@
+# Sample entry
+
+mastodon_feed_url = "full link to your mastodon rss feed"
+post_path = "full path to the Hugo microposts folder"
+image_path = "full path to the Hugo images folder."
