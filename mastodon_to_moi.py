@@ -1,7 +1,10 @@
 # Aims
-# 1. Should be a python script that syncs my Mastodon feed to my microblog
+# DONE: 1. Should be a python script that syncs my Mastodon feed to my microblog
 # TODO: 2. Learn to give them types and learn mypy
-# TODO: 3. It should be a standalone python utility, with no need for a system python, use click?
+# TODO: 3. Async Downloads
+# TODO: 4. Switch away from `.py` and `.json` to a `sqlite.db`
+# TODO: 5. It should be a standalone python utility, with no need for a system python, use freeze/typer/click?
+# TODO: 6. Talk to the Mastodon API to get retweets and see if that is something you want to save or publish.
 
 
 # Sample micropost skeleton
@@ -12,13 +15,13 @@
 # tags:
 # ---
 
-import sys
+
 import datetime
 import json
 from pathlib import Path
 
-import httpx
 import feedparser
+import httpx
 from bs4 import BeautifulSoup
 from markdownify import markdownify
 
@@ -63,7 +66,7 @@ def write_toots_to_posts(feed_url, feed_state):
         if int(toot.id.split('/')[-1]) == state_dict['last_toot_id']:
             break
         else:
-            # Setup an empty dictionary to hold parsed values
+            # Set up an empty dictionary to hold parsed values
             post_dict = {
                 'meta_string': "---",  # for yaml metadata boundaries in the post
                 'title': None,
