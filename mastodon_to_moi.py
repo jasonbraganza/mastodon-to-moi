@@ -22,8 +22,10 @@ import feedparser
 from bs4 import BeautifulSoup
 from markdownify import markdownify
 
-from settings import fallback_url
+from settings import fallback_url, post_path, image_path
 
+microblog_post_path = Path(post_path)
+microblog_image_path = Path(image_path)
 
 # def main():
 #     start_config = load_config_and_state()
@@ -113,15 +115,19 @@ def write_toots_to_posts(feed_url, feed_state):
                             f"![{image_name}](/images/{str(toot_date.year)}/{image_name})")
                         r = httpx.get(each_item['url'])
                         if r.status_code == 200:
-                            with open(f'./output/images/{str(toot_date.year)}/{image_name}', 'wb') as f2w:
+                            #Create yearly image folder if it does not exist
+                            img_year = microblog_image_path.joinpath(str(toot_date.year))
+                            Path.mkdir(img_year, parents = True, exist_ok = True)
+                            with open(f'{img_year.joinpath(image_name)}', 'wb') as f2w:
                                 f2w.write(r.content)
                         else:
                             continue
             else:
                 pass
 
+
             # Write the post to a file
-            with open(f'./output/posts/{post_file_name}', 'w') as f2w:
+            with open(f'{microblog_post_path.joinpath(post_file_name)}', 'w') as f2w:
                 f2w.write(f"{post_dict['meta_string']}\n")
                 f2w.write(f"title: {post_dict['title']}\n")
                 f2w.write(f"date: {post_dict['date']}\n")
