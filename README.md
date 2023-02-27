@@ -25,5 +25,5 @@ python -m pip install -r requirements.txt
 
 3. Run the script to pull toots and push to the microblog.
 ```bash
-python mastodon_to_moi.py
+python mastodon-to-moi.py
 ```
