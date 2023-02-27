@@ -27,11 +27,6 @@ from settings import mastodon_feed_url, post_path, image_path
 microblog_post_path = Path(post_path)
 microblog_image_path = Path(image_path)
 
-# def main():
-#     start_config = load_config_and_state()
-#     latest_config = get_latest_episodes(start_config)
-#     store_config_and_state(latest_config)
-
 
 def load_state():
     """
@@ -115,16 +110,16 @@ def write_toots_to_posts(feed_url, feed_state):
                             f"![{image_name}](/images/{str(toot_date.year)}/{image_name})")
                         r = httpx.get(each_item['url'])
                         if r.status_code == 200:
-                            #Create yearly image folder if it does not exist
+                            # Create yearly image folder if it does not exist
                             img_year = microblog_image_path.joinpath(str(toot_date.year))
-                            Path.mkdir(img_year, parents = True, exist_ok = True)
+                            Path.mkdir(img_year, parents=True, exist_ok=True)
+                            # Write image to disk
                             with open(f'{img_year.joinpath(image_name)}', 'wb') as f2w:
                                 f2w.write(r.content)
                         else:
                             continue
             else:
                 pass
-
 
             # Write the post to a file
             with open(f'{microblog_post_path.joinpath(post_file_name)}', 'w') as f2w:
@@ -147,14 +142,11 @@ def write_toots_to_posts(feed_url, feed_state):
     state_dict['last_toot_id'] = latest_toot_id
     save_state(state_dict)
 
+
 def main(mastodon_account_rss_url):
     initial_feed_state = load_state()
     write_toots_to_posts(mastodon_account_rss_url, initial_feed_state)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 1:
-        url = sys.argv[1]
-        main(url)
-    else:
-        main(mastodon_feed_url)
+    main(mastodon_feed_url)
