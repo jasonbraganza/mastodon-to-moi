@@ -161,3 +161,6 @@ cython_debug/
 .idea/
 .python-version
 /feed_state.json
+/mastodon-to-moi.build/
+*.build/
+dev-requirements.txt

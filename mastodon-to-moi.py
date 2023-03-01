@@ -1,9 +1,10 @@
 # Aims
 # DONE: 1. Should be a python script that syncs my Mastodon feed to my microblog
-# TODO: 2. Learn to give them types and learn mypy
+# DONE: 2. Learn to give them types and learn mypy. Learnt the basics. not for this project
 # TODO: 3. Async Downloads
 # TODO: 4. Switch away from `.py` and `.json` to a `sqlite.db`
-# TODO: 5. It should be a standalone python utility, with no need for a system python, use freeze/typer/click?
+# DONE: 5. It should be a standalone python utility, with no need for a system python, use freeze/typer/click?
+#          not for this project. requires too much scaffolding. 
 # TODO: 6. Talk to the Mastodon API to get retweets and see if that is something you want to save or publish.
 
 
