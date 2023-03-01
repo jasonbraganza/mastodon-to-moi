@@ -1,6 +1,6 @@
 # Aims
 # DONE: 1. Should be a python script that syncs my Mastodon feed to my microblog
-# DONE: 2. Learn to give them types and learn mypy - learnt enough mypy to realise, I don’t want typing here
+# TODO: 2. Learn to give them types and learn mypy
 # TODO: 3. Async Downloads
 # TODO: 4. Switch away from `.py` and `.json` to a `sqlite.db`
 # TODO: 5. It should be a standalone python utility, with no need for a system python, use freeze/typer/click?
