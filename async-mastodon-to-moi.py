@@ -3,11 +3,9 @@
 # DONE: 2. Learn to give them types and learn mypy. Learnt the basics. not for this project
 # TODO: 3. Async Downloads
 # TODO: 4. Switch away from `.py` and `.json` to a `sqlite.db`
-# TODO: 5. Async all the toots
-# DONE: 6. It should be a standalone python utility, with no need for a system python, use freeze/typer/click?
+# DONE: 5. It should be a standalone python utility, with no need for a system python, use freeze/typer/click?
 #          not for this project. requires too much scaffolding. 
-# TODO: 7. Talk to the Mastodon API to get retweets and see if that is something you want to save or publish.
-
+# TODO: 6. Talk to the Mastodon API to get retweets and see if that is something you want to save or publish.
 
 
 # Sample micropost skeleton
@@ -19,10 +17,13 @@
 # ---
 
 
+from pathlib import Path
 import datetime
 import json
-from pathlib import Path
+import asyncio
+from collections import namedtuple
 
+import aiofiles
 import feedparser
 import httpx
 from bs4 import BeautifulSoup
@@ -32,6 +33,17 @@ from settings import mastodon_feed_url, post_path, image_path
 
 microblog_post_path = Path(post_path)
 microblog_image_path = Path(image_path)
+
+
+# grab images from a url
+async def get_img(url):
+    async with httpx.AsyncClient() as client:
+        r = await client.get(url)
+        if r.status_code:
+            image_name = url.split('/')[-1]
+            image_content = r.content
+            return (image_name, image_content)
+
 
 
 def load_state():
@@ -57,7 +69,7 @@ def save_state(program_state):
         json.dump(program_state, f2w)
 
 
-def write_toots_to_posts(feed_url, feed_state):
+async def write_toots_to_posts(feed_url, feed_state):
     # Parse URL
     url_to_process, state_dict = feed_url, feed_state
     mastodon_feeds = feedparser.parse(url_to_process)
@@ -69,7 +81,7 @@ def write_toots_to_posts(feed_url, feed_state):
         if int(toot.id.split('/')[-1]) == state_dict['last_toot_id']:
             break
         else:
-            # Set up an empty dictionary to hold parsed values
+            # Set up an empty dictionary to hold parsed values, that’ll serve as templated strings for the blog post
             post_dict = {
                 'meta_string': "---",  # for yaml metadata boundaries in the post
                 'title': None,
@@ -107,23 +119,39 @@ def write_toots_to_posts(feed_url, feed_state):
                 post_dict['content'].append(markdownify(str(each_line), heading_style='atx'))
                 post_dict['content'].append("{{< hbr >}}" + "  \n")
 
-            # Get images # TODO: figure out how to do this asynchronously
+            # Get images # IN-PROGRESS: figure out how to do this asynchronously
             if 'media_content' in toot:
+                # Create yearly image folder if it does not exist
+                img_year = microblog_image_path.joinpath(str(toot_date.year))
+                Path.mkdir(img_year, parents=True, exist_ok=True)
+
+                image_urls_to_download = []  # build up a dict of image names & urls to download
+
+                # if media is an image put url in the list above, generate a local link for the post on moi
+                # and put it in the post dict
                 for each_item in toot.media_content:
                     if 'image' in each_item['type']:
                         image_name = each_item['url'].split('/')[-1]
                         post_dict['image_link_strings'].append(
                             f"![{image_name}](/images/{str(toot_date.year)}/{image_name})")
-                        r = httpx.get(each_item['url'])
-                        if r.status_code == 200:
-                            # Create yearly image folder if it does not exist
-                            img_year = microblog_image_path.joinpath(str(toot_date.year))
-                            Path.mkdir(img_year, parents=True, exist_ok=True)
-                            # Write image to disk
-                            with open(f'{img_year.joinpath(image_name)}', 'wb') as f2w:
-                                f2w.write(r.content)
-                        else:
-                            continue
+                        image_urls_to_download.append(each_item['url'])
+
+
+                # Create a task list of image urls
+                image_tasks = []
+                for each_img in image_urls_to_download:
+                    t = asyncio.create_task(get_img(each_img))
+                    image_tasks.append(t)
+                # Process tasks and get images from urls
+                image_results = []
+                for task in asyncio.as_completed(image_tasks):
+                    image_results.append(await task)
+
+                # Write them out to files
+                for img in image_results:
+                    async with aiofiles.open(f"{img_year.joinpath(img[0])}" , 'wb') as f2w:
+                        await f2w.write(img[1])
+
             else:
                 pass
 
@@ -149,10 +177,10 @@ def write_toots_to_posts(feed_url, feed_state):
     save_state(state_dict)
 
 
-def main(mastodon_account_rss_url):
+async def main(mastodon_account_rss_url):
     initial_feed_state = load_state()
-    write_toots_to_posts(mastodon_account_rss_url, initial_feed_state)
+    await (write_toots_to_posts(mastodon_account_rss_url, initial_feed_state))
 
 
 if __name__ == "__main__":
-    main(mastodon_feed_url)
+    asyncio.run(main(mastodon_feed_url))
